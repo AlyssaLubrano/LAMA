@@ -1,0 +1,180 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+#define MAX_LIMIT 64
+
+struct profile {
+    char name[MAX_LIMIT];
+    int age;
+    int height;
+    int weight;
+    char injury[MAX_LIMIT];
+};
+
+struct target_area {
+    struct target_area *next;
+    int duration;
+    char title[MAX_LIMIT];
+    char location[MAX_LIMIT];
+    char video_link[MAX_LIMIT];
+    char dangerous_for[MAX_LIMIT];
+};
+
+void setup_profile(
+    struct profile *my_profile,
+    char *name, 
+    char *age, 
+    char *height,
+    char *weight,
+    char *gender,
+	char *injury
+);
+
+struct target_area *create_workout (int duration, char location[MAX_LIMIT],
+char title[MAX_LIMIT], char video_link[MAX_LIMIT], char dangerous_for[MAX_LIMIT],
+struct target_area *next);
+
+void find_workout_program(struct target_area *target, int duration, 
+char location[MAX_LIMIT], char injury[MAX_LIMIT]);
+
+int main (void) {
+
+    // entering example workout routines into the app
+    // note we have only implemented workouts made for legs
+    struct target_area *legs = create_workout(10, "park", "GET THAT BOOTY", 
+    "https://www.youtube.com/watch?v=LAeOJH_OIks&ab_channel=PamelaReif", "knee", NULL);
+    legs = create_workout(15, "park", "GET THAT BOOTY AND SAVE YOUR KNEES", 
+    "https://www.youtube.com/watch?v=LAeOJH_OIks&ab_channel=PamelaReif", " ", legs);
+    legs = create_workout(10, "indoors", "Knee friendly on the ground routine", 
+    "https://www.youtube.com/watch?v=6bpjmIgD7T0&t=5s&ab_channel=PamelaReif", " ", legs);
+    legs = create_workout(20, "gym", "BEGINNER gym with me routine", 
+    "https://www.youtube.com/watch?v=lXA0Ul-NqdY&ab_channel=NaomiKong", " ", legs);
+
+    struct target_area *shoulders = create_workout(15, "indoors", "15 Minute Shoulders", 
+    "https://www.youtube.com/watch?v=QQ5kX8BBmw4&ab_channel=MiDASMVMT", " ", NULL);
+
+    struct target_area *arms = create_workout(15, "park", "15 Minute Arm Workout", 
+    "https://www.youtube.com/watch?v=UY6-JzdnHUM&t=652s&ab_channel=FraserWilson", " ", NULL);
+
+    struct target_area *abs = create_workout(10, "indoors", "Get Abs in 2 Weeks", 
+    "https://www.youtube.com/watch?v=2pLT-olgUJs&t=1s&ab_channel=ChloeTing", "knee", NULL);
+
+	// initial profile setup. Asking for name, age, weight and if you are carrying any injuries
+	char name[MAX_LIMIT];
+	char age[MAX_LIMIT];
+    char height[MAX_LIMIT];
+	char weight[MAX_LIMIT];
+    char gender[MAX_LIMIT];
+    char injury[MAX_LIMIT];
+	printf("input name: ");
+	scanf("%[^\n]%*c", name);
+	printf("input age: ");
+	scanf("%[^\n]%*c", age);
+    printf("input height: ");
+	scanf("%[^\n]%*c", height);
+	printf("input weight: ");
+	scanf("%[^\n]%*c", weight);
+    printf("input gender: ");
+	scanf("%[^\n]%*c", gender);
+	printf("do you have any chronic injuries? If so, what are they? (knee, shoulder, hamstring) (if n/a put 'no') ");
+	scanf("%[^\n]%*c", injury);
+
+	struct profile new_profile;
+    setup_profile(&new_profile, name, age, height, weight, gender, injury);
+
+    // generating the workout routine
+    printf("You have chosen to start a workout. What workout would you like? (legs, shoulders, arms, abs)\n");
+    char workout[MAX_LIMIT];
+    scanf("%[^\n]%*c", workout);
+    if (strcmp(workout, "legs") == 0 || strcmp(workout, "shoulders") == 0 ||
+        strcmp(workout, "arms") == 0 || strcmp(workout, "abs") == 0) {
+        // Ask for conditions - location, weights
+        char location[MAX_LIMIT];
+        printf("What is your current location? (indoors, park, gym):");
+        scanf("%[^\n]%*c", location);
+        int duration;
+        printf("How long do you want to work out for? ");
+        scanf("%d", &duration);
+        printf("Generating a %d minute workout plan made for the %s\n", duration, location);
+        printf("\n");
+
+        if (strcmp(workout, "legs") == 0) {
+            find_workout_program(legs, duration, location, injury);
+        } else if (strcmp(workout, "shoulders") == 0) {
+            find_workout_program(shoulders, duration, location, injury);
+        } else if (strcmp(workout, "arms") == 0) {
+            find_workout_program(arms, duration, location, injury);
+        } else if (strcmp(workout, "abs") == 0) {
+            find_workout_program(abs, duration, location, injury);
+        }
+
+    } else {
+        printf("Invalid workout routine selected. Try again\n");
+    }
+}
+
+void setup_profile (
+    struct profile *my_profile, 
+        char *name,  
+        char *age, 
+        char *height,
+        char *weight,
+        char *gender,
+        char *injury
+) {
+
+    strcpy(my_profile->name, name);
+    my_profile->age = atoi(age);
+    my_profile->height = atoi(height);
+    my_profile->weight = atoi(weight);
+    strcpy(my_profile->name, gender);
+    strcpy(my_profile->injury, injury);
+}
+
+struct target_area *create_workout (int duration, char location[MAX_LIMIT],
+char title[MAX_LIMIT], char video_link[MAX_LIMIT], char dangerous_for[MAX_LIMIT],
+struct target_area *next) {
+    struct target_area *n = malloc(sizeof(struct target_area));
+    n->duration = duration;
+    strcpy(n->location, location);
+    strcpy(n->title, title);
+    strcpy(n->video_link, video_link);
+    strcpy(n->dangerous_for, dangerous_for);
+    n->next = next;
+    return n;
+}
+
+void find_workout_program(struct target_area *target, int duration, 
+char location[MAX_LIMIT], char injury[MAX_LIMIT]) {
+    struct target_area *curr = target;
+    int total_time = 0;
+    while (total_time < (duration - 5)) {
+        if (strcmp(injury, "no") == 0) {
+            while (curr != NULL) {
+                if (strcmp(location, curr->location) == 0 && (curr->duration + total_time) < (duration + 5)) {
+                    printf("%d minute workout called '%s' made for at the %s\n", curr->duration, curr->title, location);
+                    printf("youtube link can be found at: %s\n", curr->video_link);
+                    printf("\n");
+                    total_time = total_time + curr->duration;
+                    curr = curr->next;
+                } else {
+                    curr = curr->next;
+                }
+            }
+        } else {
+            while (curr != NULL) {
+                if (strcmp(location, curr->location) == 0 && (curr->duration + total_time) < (duration + 5) &&
+                strcmp(injury, curr->dangerous_for) != 0) {
+                    printf("%d minute workout called '%s' made for at the %s\n", curr->duration, curr->title, location);
+                    printf("youtube link can be found at: %s\n", curr->video_link);
+                    printf("\n");
+                    total_time = total_time + curr->duration;
+                    curr = curr->next;
+                } else {
+                    curr = curr->next;
+                }
+            }
+        }
+    }
+}
